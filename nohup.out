@@ -1,0 +1,35 @@
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
+connected flag  false
+listening on port : 9000
+connected true
+subscribing to topics
+subscription granted to pluto/switch [{"topic":"pluto/switch","qos":2}]
