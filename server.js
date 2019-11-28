@@ -93,29 +93,27 @@ app.post('/dialogFlow', (request, response) => {
         message = `{"node":${place},"pin":${device},"value":${action}}`;
         console.log('publishing...')
         publish(topic,message,options);
-
-        //handle incoming messages
-        client.on('message',function(topic, message){
-            console.log("message is " + message.toString());
-            console.log("topic is "+ topic);
-            resp(`here we go ${place} ${device} ${action_value}`);
-        });
     }
 
-    function resp(speech){
-        return response.json({
-            "fulfillmentText": speech,
-            "fulfillmentMessages": [
-                {
-                    "text": {
-                        "text": [
-                            speech,
-                        ]
-                    }
+    //handle incoming messages
+    client.on('message',function(topic, message){
+        console.log("message is " + message.toString());
+        console.log("topic is "+ topic);
+        //resp(`here we go ${place} ${device} ${action_value}`);
+    });
+
+    return response.json({
+        "fulfillmentText": `here we go ${place} ${device} ${action_value}`,
+        "fulfillmentMessages": [
+            {
+                "text": {
+                    "text": [
+                        `here we go ${place} ${device} ${action_value}`,
+                    ]
                 }
-            ],
-        });
-    }
+            }
+        ],
+    });
 
 });
 
