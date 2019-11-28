@@ -1,13 +1,13 @@
 const express = require('express');
 const app = express();
 var bodyParser = require('body-parser')
-var mqtt    = require('mqtt');
+var mqtt = require('mqtt');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//const mongoose = require('mongoose');
-//mongoose.connect('mongodb+srv://sharath:Sh95856030@tm-cluster-qbvb2.mongodb.net/hocketIO?retryWrites=true&w=majority', {useNewUrlParser: true});
+const mongoose = require('mongoose');
+mongoose.connect('mongodb+srv://sharath:Sh95856030@tm-cluster-qbvb2.mongodb.net/hocketIO?retryWrites=true&w=majority', {useNewUrlParser: true});
 
 // getting request to the main page...
 app.get('/', (request, response) => {
@@ -18,24 +18,24 @@ app.get('/', (request, response) => {
     });
 });
 
-// app.get('/testingMongo', (request, response) => {
-//     // creating a document in mongo client...
-//     const Cat = mongoose.model('Cat', { name: String });
-//     new Cat({ name: 'Zildjian' })
-//     .save().then((err , resp) => {
-//         if (err) {
-//             response.status(400).json({
-//                 "error":err,
-//                 "status":"error"
-//             })
-//         } else {
-//             response.status(200).json({
-//                 "response":resp,
-//                 "status":"success"
-//             })
-//         }
-//     });
-// });
+app.get('/testingMongo', (request, response) => {
+    // creating a document in mongo client...
+    const Cat = mongoose.model('Cat', { name: String });
+    new Cat({ name: 'Zildjian' })
+    .save().then((err , resp) => {
+        if (err) {
+            response.status(400).json({
+                "error":err,
+                "status":"error"
+            })
+        } else {
+            response.status(200).json({
+                "response":resp,
+                "status":"success"
+            })
+        }
+    });
+});
 
 
 // setting up the mqtt service
@@ -98,11 +98,11 @@ app.post('/dialogFlow', (request, response) => {
         client.on('message',function(topic, message){
             console.log("message is " + message.toString());
             console.log("topic is "+ topic);
-            success_resp(`here we go ${place} ${device} ${action_value}`);
+            resp(`here we go ${place} ${device} ${action_value}`);
         });
     }
 
-    function success_resp(speech){
+    function resp(speech){
         return response.json({
             "fulfillmentText": speech,
             "fulfillmentMessages": [
@@ -116,7 +116,41 @@ app.post('/dialogFlow', (request, response) => {
             ],
         });
     }
+
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
