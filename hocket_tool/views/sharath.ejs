@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+  <head>
+
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.1/axios.js"></script>
+    <script src="/static/socket.io-client/dist/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="http://localhost:8000/siofu/client.js"></script>
+    <style>
+      html,body {
+        height: 100%;
+      }
+
+      #sidebar, #groupbar {
+        height: 100%;
+      }
+      #chatbar {
+        height: 100%;
+      }
+      .progressBar {
+        height: 10px;
+        width: 200px;
+        border: 1px solid gray;
+      }
+      #progress{
+        height: 10px;
+        width: 0px;
+        background-color: green;
+      }
+    </style>
+  </head>
+  <body>
+    
+
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="http://www.thehocket.com">Hocket.IO</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/dashboard">Dashboard<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Chat</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link" href="/tasks">Tasks</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/logout">logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div id="notifySuccess" class="alert alert-success w-25" style="position: absolute; top: 5px; right: 100px; z-index: 999; display: none;">
+        <!-- notification goes here -->
+      </div>
+
+      <div id="notifyDanger" class="alert alert-danger w-25" style="position: absolute; top: 5px; right: 100px; z-index: 999; display: none;">
+        <!-- notification goes here -->
+      </div>
+
+      
+      <dialog id="groupDialog" style="height: auto; widows: auto;z-index: 999;padding: 20px;">
+        <button class="btn btn-sm btn-danger" onclick="dialogModal('groupDialog')">close</button>
+        <form id="group">
+          <label for="group">Group Name</label></br>
+          <input type="text" name="group" id="groupName"></br></br>
+          <input type="submit" value="create">
+        </form>
+      </dialog>
+
+      <dialog id="fileDialog" style="height: auto; widows: auto;z-index: 999;padding: 20px;">
+        <button class="btn btn-sm btn-danger" onclick="(dialogModal('fileDialog'))">close</button>
+        <p><label>Choose File: <input type="file" id="upload_input"/></label></p>
+        <p><button id="upload_btn">upload</button></p>
+        <div class="progressBar"><div id="progress"></div> </div>
+      </dialog>
+
+
+
+      <!--  -->
+      <!-- this is main info bar in chatting section -->
+      <div class="container-fluid" style="height: 90%;">
+        <div class="row" ng-controller="infoBarCtrl">
+          <div class="col-sm-3 bg-info text-light p-2" id="user">
+            <%= user %>
+          </div>
+          <div class="col-sm-2 bg-info text-light p-2">
+            <button type="button" class="btn btn-primary" onclick="dialogModal('groupDialog')">create group</button>
+          </div>
+          <div class="col-sm-2 bg-info text-light p-2">
+            <button type="button" class="btn btn-primary" onclick="(dialogModal('fileDialog'))">upload file</button>
+          </div>
+          <div class="col-sm-3 bg-info text-light p-2" id="currentChat">
+              Current chat
+          </div>
+          <div class="col-sm-2 bg-info text-light p-2" id="typing">
+            
+          </div>
+        </div>
+
+      <div class="row" style="height: 88%;" ng-controller="userListCtrl">
+        <div class="col-3 bg-light border-right text-light p-1" style="overflow: auto;">
+            <!-- <div class="bg-primary p-2 border rounded">
+              <div style="min-height: 24px;">  name here </div>
+            </div> -->
+            <div id="sidebar">
+
+            </div>
+            <div id="groupbar">
+
+            </div>
+        </div>
+        <div class="col-9 bg-light" id="chatbar">
+          <div id="messages">
+
+          </div>
+            <!-- chats goes here -->
+        </div>
+      </div>
+
+      <div class="row p-0" ng-controller="chatsCtrl">
+        <div class="col-12 p-0">
+          <form id="chat" class="form-inline">
+            <label class="border p-2 px-3 rounded h-5"> Message => </label>
+            <input id="md" class="form-control mr-2" style="width: 30%;" type="text" name="message" placeholder="type here...">
+            <input id="m" class="form-control mr-2" style="width: 45%;" type="text" name="message" placeholder="type here...">
+            <button type="submit" class="btn btn-success" style="width: 11%;">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+<script>
+
+var from = document.getElementById("user").innerText;
+var to = "";
+
+
+      function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+          var c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+      function liveUsers(users){
+        document.getElementById("sidebar").innerHTML = "";
+        for (i of users){
+            document.getElementById("sidebar").innerHTML += `<div class="bg-primary p-2 border rounded">
+            <div style="min-height: 24px; cursor:pointer""> ${i} </div>
+          </div>`;
+          }
+      }
+
+      function groupList(groups){
+        document.getElementById("groupbar").innerHTML = "";
+        for (i of groups){
+            document.getElementById("groupbar").innerHTML += `<div class="bg-primary p-2 border rounded">
+            <div style="min-height: 24px; cursor:pointer""> ${i} </div>
+          </div>`;
+          }
+      }
+
+      function userNotify(user, state){
+        let notify;
+        if (state == "Online"){
+          notify = document.getElementById("notifySuccess")
+        } else if (state == "Offline"){
+          notify = document.getElementById("notifyDanger")
+        }
+        notify.innerHTML = `<strong> ${user.toUpperCase()} </strong> is ${state}`;
+        notify.style.display = "block";
+        setTimeout(()=>{
+          notify.style.display = "none";
+        }, 2000);
+
+      }
+
+      function dialogModal(id){
+        let dialog = document.getElementById(id);
+        if (dialog.open) {
+          document.getElementById(id).close();
+        } else {
+          document.getElementById(id).show();
+        }
+      }
+
+      function notification(user, detail){
+        let notify = document.getElementById("notifySuccess")
+        notify.innerHTML = `<strong> ${user.toUpperCase()} </strong> ${detail}`;
+        notify.style.display = "block";
+        setTimeout(()=>{
+          notify.style.display = "none";
+        }, 2000);
+      }
+
+      function typing(user){
+        let content = document.getElementById("typing").innerText;
+        if (content == ""){
+          document.getElementById("typing").innerText = `${user } is typing`;
+          var clearing = setTimeout(()=>{
+            document.getElementById("typing").innerText = "";
+          }, 2500);
+        }
+      }
+
+    document.addEventListener("DOMContentLoaded", function(){
+        
+        var socket = io("http://localhost:8000/", {
+          query: {
+            name : from,
+            token: getCookie("Authorization")
+          }
+        });
+
+        /*
+        * ************************************************************* this is file uploading section
+        */
+        // Initialize instances:
+        var siofu = new SocketIOFileUpload(socket, {
+            chunkSize: 1024 * 10
+        });
+    
+        // Configure the three ways that SocketIOFileUpload can read files:
+        siofu.listenOnSubmit(document.getElementById("upload_btn"), document.getElementById("upload_input"));
+        // siofu.listenOnInput(document.getElementById("upload_input"));
+
+        siofu.addEventListener("error", function(data){
+            if (data.code === 1) {
+                alert("Don't upload such a big file");
+            }
+        });
+
+        siofu.addEventListener('start', (event)=> {
+            console.log(event.file.name)
+        });
+    
+        // Do something on upload progress:
+        siofu.addEventListener("progress", function(event){
+            var percent = event.bytesLoaded / event.file.size * 100;
+            document.getElementById("progress").style.width = percent.toFixed(2) * 2 + "px";
+            // console.log("File is", percent.toFixed(2), "percent loaded");
+        });
+    
+        // Do something when a file is uploaded:
+        siofu.addEventListener("complete", function(event){
+            console.log(event.success);
+            console.log(event.file);
+        });
+
+        /** ********************************************************************************* */
+
+        socket.emit("get chats", 11);
+        socket.on("receive chats", (data) => {
+          console.log(JSON.stringify(data));
+          for (let i=0;i<data.length;i++){
+            $('#messages').append($("<div class='card m-1 p-1 w-50 bg-light float-left'></div>").text(`${data[i].from} : ${data[i].message}`));
+          }
+        })
+
+        socket.emit("create room", from);
+        socket.on("joined", (data) => {
+            console.log(data)
+        })
+
+        // socket.emit("create room", "room3");
+        // socket.on("direct sent", (data) => {
+        //   console.log(data);
+        // })
+
+
+        socket.on("user added", (users, user, state) => {
+            liveUsers(users)
+            userNotify(user, state)
+        })
+
+        socket.emit('create group', "design", from);
+        socket.on("notify", (user, groups, group, detail) => {
+          to = group;
+          groupList(groups)
+          notification(user, detail)
+        })
+
+        // socket.on("group list", (groups) => {
+        //   groupList(groups)
+        // })
+
+        socket.on("typing", (user) => {
+          typing(user);
+        })
+
+        $('#chat').submit(function(e){
+          e.preventDefault(); // prevents page reloading
+          socket.emit('send message',{room:to, from:from, msg:$('#m').val()});
+
+          $('#messages').append($("<div class='card m-1 p-1 w-50 bg-info text-light float-right'></div>").text(`Me : ${$('#m').val()}`));
+          $('#m').val('');
+          return false;
+        });
+
+        $('#group').submit(function(e){
+          e.preventDefault(); // prevents page reloading
+          socket.emit('create group',  $('#groupName').val(), from);
+          document.getElementById("groupDialog").close();
+        });
+
+        $('#m').on('keyup', function() {
+            socket.emit("typing", from);
+        });
+
+
+        socket.on('send message', function(msg){
+          $('#messages').append($("<div class='card m-1 p-1 w-50 bg-light float-left'></div>").text(msg));
+        });
+
+        socket.on("receive file", (data, name) =>{
+          $('#messages').append($(`<div><img style="height: 100px; width: 150px;" src="${data}" alt="${name}"></div>`));
+        });
+
+
+    }, false);
+
+</script>
+
+
+
+
+
+
+
+  </body>
+</html>

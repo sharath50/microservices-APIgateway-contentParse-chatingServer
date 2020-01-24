@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+  <head>
+
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.1/axios.js"></script>
+    <script src="/static/socket.io-client/dist/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <style>
+      html,body {
+        height: 100%;
+      }
+
+      #sidebar, #chatbar {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    
+
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="http://www.thehocket.com">Hocket.IO</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/dashboard">Dashboard<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Chat</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link" href="/tasks">Tasks</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/logout">logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+
+      <!--  -->
+      <!-- this is main info bar in chatting section -->
+      <div class="container-fluid" style="height: 90%;">
+        <div class="row" ng-controller="infoBarCtrl">
+          <div class="col-sm-3 bg-info text-light p-2" id="user">
+            <%= user %>
+          </div>
+          <div class="col-sm-9 bg-info text-light p-2">
+            Current chat
+          </div>
+        </div>
+
+      <div class="row" style="height: 88%;" ng-controller="userListCtrl">
+        <div class="col-3 bg-light border-right text-light p-1" id="sidebar" style="overflow: auto;" id="userList">
+            <!-- <div class="bg-primary p-2 border rounded">
+              <div style="min-height: 24px;">  name here </div>
+            </div> -->
+        </div>
+        <div class="col-9 bg-light" id="chatbar">
+          <div style="overflow: auto;" id="messages">
+            chat will come here
+          </div>
+        </div>
+      </div>
+
+      <div class="row p-0" ng-controller="chatsCtrl">
+        <div class="col-12 p-0">
+          <form id="chat" class="form-inline">
+            <label class="border p-2 px-4 rounded h-5"> Message => </label>
+            <input id="md" class="form-control mr-2" style="width: 30%;" type="text" name="message" placeholder="type here...">
+            <input id="m" class="form-control mr-2" style="width: 45%;" type="text" name="message" placeholder="type here...">
+            <button type="submit" class="btn btn-success" style="width: 13%;">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+<script>
+
+      function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i <ca.length; i++) {
+          var c = ca[i];
+          while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+      var from = document.getElementById("user").innerText;
+      var to = "";
+      $(function () {  
+        
+        var socket = io("http://localsost:8000", {
+          query: {
+            name : from,
+            token: getCookie("Authorization")
+          }
+        });
+
+        socket.emit("create room", from);
+        socket.on("notify", (data) => {
+            console.log(data)
+        })
+
+        socket.on("user added", (user, data) => {
+            for (i of data){
+              document.getElementById("userList").innerHTML += `<div class="bg-primary p-2 border rounded">
+              <div style="min-height: 24px;"> ${i} </div>
+            </div>`;
+            }
+        })
+
+
+
+        $('#chat').submit(function(e){
+          e.preventDefault(); // prevents page reloading
+          socket.emit('send message',{room:$('#md').val(), from:from, msg:$('#m').val()});
+
+          $('#messages').append($("<div class='card m-1 p-1 w-50 bg-info text-light float-right'></div>").text(`Me : ${$('#m').val()}`));
+          $('#m').val('');
+          return false;
+        });
+
+
+        socket.on('send message', function(msg){
+          $('#messages').append($("<div class='card m-1 p-1 w-50 bg-light float-left'></div>").text(msg));
+        });
+
+      });
+
+</script>
+
+
+
+
+
+  </body>
+</html>

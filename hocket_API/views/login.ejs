@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="static/crypto-js/crypto-js.js"></script>
+    <title>Log in</title>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="http://www.thehocket.com">Hocket.IO</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/dashboard">Dashboard<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/chat">Chat</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link" href="/tasks">Tasks</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="signup">signup</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+    <form name="login" id="loginform" action="/login" method="POST" class="mt-5 m-auto card p-5 w-50" enctype="application/x-www-form-urlencoded">
+        <div class="form-group">
+          <label for="exampleInputEmail1">Email address</label>
+          <input type="email" class="form-control" name="email">
+        </div>
+        <div class="form-group">
+          <label for="exampleInputPassword1">Password</label>
+          <input type="password" class="form-control" name="password">
+        </div>
+        <button type="submit" class="btn btn-primary" name="login">LogIn</button>
+      </form>
+
+
+      <script>
+          secretKey = "thisIsASecretKey";
+          function encrypt(){
+              document.login.email.value = CryptoJS.AES.encrypt(document.login.email.value, secretKey).toString();
+              document.login.password.value = CryptoJS.AES.encrypt(document.login.password.value, secretKey).toString();
+          }
+      
+      </script>
+
+
+    
+</body>
+</html>
